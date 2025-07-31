@@ -1,4 +1,4 @@
-package com.BugJava.EduConnect.post.dto;
+package com.BugJava.EduConnect.freeboard.dto;
 
 import lombok.*;
 import jakarta.validation.constraints.NotBlank;
@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PostRequest {
+public class FbPostRequest {
 
     @NotBlank(message = "제목은 필수입니다.")
     @Size(max = 255, message = "제목은 255자 이하로 입력해야 합니다.")

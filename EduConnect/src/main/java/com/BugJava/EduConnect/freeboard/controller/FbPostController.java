@@ -1,8 +1,8 @@
-package com.BugJava.EduConnect.post.controller;
+package com.BugJava.EduConnect.freeboard.controller;
 
-import com.BugJava.EduConnect.post.dto.PostRequest;
-import com.BugJava.EduConnect.post.dto.PostResponse;
-import com.BugJava.EduConnect.post.service.PostService;
+import com.BugJava.EduConnect.freeboard.dto.FbPostRequest;
+import com.BugJava.EduConnect.freeboard.dto.FbPostResponse;
+import com.BugJava.EduConnect.freeboard.service.FbPostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,25 +15,25 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
-public class PostController {
+public class FbPostController {
 
-    private final PostService postService;
+    private final FbPostService postService;
 
     /** 전체 게시글 조회 */
     @GetMapping
-    public ResponseEntity<List<PostResponse>> getAllPosts() {
+    public ResponseEntity<List<FbPostResponse>> getAllPosts() {
         return ResponseEntity.ok(postService.getAllPosts());
     }
 
     /** 단일 게시글 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponse> getPost(@PathVariable Long id) {
+    public ResponseEntity<FbPostResponse> getPost(@PathVariable Long id) {
         return ResponseEntity.ok(postService.getPost(id));
     }
 
     /** 게시글 생성 */
     @PostMapping
-    public ResponseEntity<?> createPost(@RequestBody @Valid PostRequest request,
+    public ResponseEntity<?> createPost(@RequestBody @Valid FbPostRequest request,
                                         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getFieldErrors().stream()
@@ -43,7 +43,7 @@ public class PostController {
             return ResponseEntity.badRequest().body(errorMessage);
         }
 
-        PostResponse created = postService.createPost(request);
+        FbPostResponse created = postService.createPost(request);
         return ResponseEntity.created(URI.create("/api/posts/" + created.getId()))
                 .body(created);
     }
@@ -51,7 +51,7 @@ public class PostController {
     /** 게시글 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<?> updatePost(@PathVariable Long id,
-                                        @RequestBody @Valid PostRequest request,
+                                        @RequestBody @Valid FbPostRequest request,
                                         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getFieldErrors().stream()

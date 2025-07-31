@@ -1,7 +1,7 @@
 package com.BugJava.EduConnect.integration.controller;
 
-import com.BugJava.EduConnect.post.domain.Post;
-import com.BugJava.EduConnect.post.repository.PostRepository;
+import com.BugJava.EduConnect.freeboard.domain.FbPost;
+import com.BugJava.EduConnect.freeboard.repository.FbPostRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -24,7 +24,7 @@ public class PostIntegrationTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private PostRepository postRepository;
+    private FbPostRepository postRepository;
 
     private Long id1;
     private Long id2;
@@ -34,19 +34,19 @@ public class PostIntegrationTest {
     void setup() {
         postRepository.deleteAll();
 
-        id1 = postRepository.save(Post.builder()
+        id1 = postRepository.save(FbPost.builder()
                 .title("기본 제목 1")
                 .content("기본 내용 1")
                 .author("기본 작성자 1")
                 .build()).getId();
 
-        id2 = postRepository.save(Post.builder()
+        id2 = postRepository.save(FbPost.builder()
                 .title("기본 제목 2")
                 .content("기본 내용 2")
                 .author("기본 작성자 2")
                 .build()).getId();
 
-        id3 = postRepository.save(Post.builder()
+        id3 = postRepository.save(FbPost.builder()
                 .title("기본 제목 3")
                 .content("기본 내용 3")
                 .author("기본 작성자 3")
