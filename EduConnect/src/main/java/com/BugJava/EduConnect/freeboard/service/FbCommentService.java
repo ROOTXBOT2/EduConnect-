@@ -22,14 +22,6 @@ public class FbCommentService {
     private final FbCommentRepository commentRepository;
     private final FbPostRepository postRepository;
 
-    /** 특정 게시글 댓글 전체 조회 */
-    public List<FbCommentResponse> getCommentsByPostId(Long postId) {
-        FbPost post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글 ID입니다."));
-        return commentRepository.findAllByPost(post).stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
 
     /** 댓글 단건 조회 */
     public FbCommentResponse getComment(Long id) {

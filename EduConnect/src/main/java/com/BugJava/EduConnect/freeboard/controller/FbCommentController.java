@@ -19,11 +19,7 @@ public class FbCommentController {
 
     private final FbCommentService commentService;
 
-    /** 특정 게시글 댓글 전체 조회 */
-    @GetMapping
-    public ResponseEntity<List<FbCommentResponse>> getComments(@PathVariable Long postId) {
-        return ResponseEntity.ok(commentService.getCommentsByPostId(postId));
-    }
+    
 
     /** 댓글 단건 조회 */
     @GetMapping("/{id}")

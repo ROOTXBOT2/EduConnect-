@@ -1,29 +1,31 @@
 package com.BugJava.EduConnect.common.config;
 
+import com.BugJava.EduConnect.common.filter.JwtAuthenticationFilter;
+import com.BugJava.EduConnect.common.handler.CustomAccessDeniedHandler;
+import com.BugJava.EduConnect.common.handler.CustomAuthenticationEntryPoint;
+import com.BugJava.EduConnect.common.service.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 
-import java.util.List;
-
+/**
+ * @author rua
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
 
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+public class SecurityConfig {
+    private final JwtTokenProvider jwtTokenProvider;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -31,37 +33,26 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager() throws Exception {
-        return authenticationManagerBuilder.getObject();
-    }
-
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults()) // CORS 설정 적용
+                // REST API를 위한 설정
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // JWT 사용으로 세션 비활성화
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/auth/**", "/error").permitAll() // 인증 관련 및 기본 에러 경로 허용
-                        //.anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
-                        .anyRequest().permitAll()
+                .formLogin(form -> form.disable())
+                //.securityMatcher() //큰 범위로 지정할때 사용
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/h2-console/**", "/swagger-ui/**", "/openapi/**","/auth/**").permitAll() // 로그인/회원가입 등은 오픈
+                        .anyRequest().authenticated()
+                )
+                // JWT 필터 등록 위치
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), SecurityContextHolderFilter.class)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 );
+
         return http.build();
     }
-
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:63342", "http://localhost:8080", "http://localhost:3000",
-                "https://wecare.mobidic.shop"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
 }
-
-

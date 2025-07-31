@@ -40,6 +40,7 @@ public class FbPost {
     private LocalDateTime updatedAt;
 
     // 추후 댓글, 대댓글 연관관계는 여기에 추가
+    @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FbComment> comments = new ArrayList<>();
 
