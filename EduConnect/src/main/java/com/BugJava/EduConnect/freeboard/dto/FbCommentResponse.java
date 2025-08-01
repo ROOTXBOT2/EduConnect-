@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class FbCommentResponse {
     private Long id;
     private String content;
-    private String author;
+    private String authorName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long postId; // 어떤 게시글에 달린 댓글인지 표시

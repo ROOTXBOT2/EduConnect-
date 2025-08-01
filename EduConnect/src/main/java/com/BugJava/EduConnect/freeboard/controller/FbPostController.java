@@ -6,15 +6,17 @@ import com.BugJava.EduConnect.freeboard.service.FbPostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
+@PreAuthorize("hasAnyRole('STUDENT', 'INSTRUCTOR', 'ADMIN')")
 public class FbPostController {
 
     private final FbPostService postService;
@@ -33,42 +35,26 @@ public class FbPostController {
 
     /** 게시글 생성 */
     @PostMapping
-    public ResponseEntity<?> createPost(@RequestBody @Valid FbPostRequest request,
-                                        BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getFieldErrors().stream()
-                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                    .reduce((msg1, msg2) -> msg1 + "; " + msg2)
-                    .orElse("잘못된 요청입니다.");
-            return ResponseEntity.badRequest().body(errorMessage);
-        }
-
-        FbPostResponse created = postService.createPost(request);
-        return ResponseEntity.created(URI.create("/api/posts/" + created.getId()))
-                .body(created);
+    public ResponseEntity<FbPostResponse> createPost(@RequestBody @Valid FbPostRequest request,
+                                                     @AuthenticationPrincipal Long userId) {
+        FbPostResponse created = postService.createPost(request, userId);
+        return ResponseEntity.ok(created); // 200 OK로 단순 처리
     }
 
     /** 게시글 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<?> updatePost(@PathVariable Long id,
-                                        @RequestBody @Valid FbPostRequest request,
-                                        BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getFieldErrors().stream()
-                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                    .reduce((msg1, msg2) -> msg1 + "; " + msg2)
-                    .orElse("잘못된 요청입니다.");
-            return ResponseEntity.badRequest().body(errorMessage);
-        }
-
-        return ResponseEntity.ok(postService.updatePost(id, request));
+    public ResponseEntity<FbPostResponse> updatePost(@PathVariable Long id,
+                                                     @RequestBody @Valid FbPostRequest request,
+                                                     @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(postService.updatePost(id, request, userId));
     }
 
     /** 게시글 삭제 */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-        postService.deletePost(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> deletePost(@PathVariable Long id,
+                                          @AuthenticationPrincipal Long userId) {
+        postService.deletePost(id, userId);
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 }
 

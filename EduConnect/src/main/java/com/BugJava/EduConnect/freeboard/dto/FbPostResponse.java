@@ -14,7 +14,7 @@ public class FbPostResponse {
     private Long id;
     private String title;
     private String content;
-    private String author;
+    private String authorName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<FbCommentResponse> comments;

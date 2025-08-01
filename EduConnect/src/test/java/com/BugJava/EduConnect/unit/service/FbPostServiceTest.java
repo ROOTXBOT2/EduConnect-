@@ -1,17 +1,21 @@
 package com.BugJava.EduConnect.unit.service;
 
+import com.BugJava.EduConnect.auth.entity.Users;
+import com.BugJava.EduConnect.auth.repository.UserRepository;
 import com.BugJava.EduConnect.freeboard.domain.FbPost;
 import com.BugJava.EduConnect.freeboard.dto.FbPostRequest;
 import com.BugJava.EduConnect.freeboard.dto.FbPostResponse;
-import com.BugJava.EduConnect.freeboard.exception.FbPostNotFoundException;
+import com.BugJava.EduConnect.freeboard.exception.PostNotFoundException;
 import com.BugJava.EduConnect.freeboard.repository.FbPostRepository;
 import com.BugJava.EduConnect.freeboard.service.FbPostService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,15 +33,29 @@ class FbPostServiceTest {
     @Mock
     private FbPostRepository fbPostRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private FbPostService fbPostService;
+
+    private Users testUser;
+    private Long testUserId = 1L;
+
+    @BeforeEach
+    void setUp() {
+        testUser = Users.builder()
+                .id(testUserId)
+                .name("testUser")
+                .build();
+    }
 
     @Test
     @DisplayName("게시글 전체 조회")
     void getAllPosts() {
         // given
-        FbPost post1 = FbPost.builder().title("title1").content("content1").author("author1").build();
-        FbPost post2 = FbPost.builder().title("title2").content("content2").author("author2").build();
+        FbPost post1 = FbPost.builder().title("title1").content("content1").user(testUser).build();
+        FbPost post2 = FbPost.builder().title("title2").content("content2").user(testUser).build();
         when(fbPostRepository.findAll()).thenReturn(Arrays.asList(post1, post2));
 
         // when
@@ -47,6 +65,7 @@ class FbPostServiceTest {
         assertThat(allPosts).hasSize(2);
         assertThat(allPosts.get(0).getTitle()).isEqualTo("title1");
         assertThat(allPosts.get(1).getTitle()).isEqualTo("title2");
+        assertThat(allPosts.get(0).getAuthorName()).isEqualTo("testUser");
     }
 
     @Test
@@ -54,14 +73,15 @@ class FbPostServiceTest {
     void getPost() {
         // given
         Long postId = 1L;
-        FbPost post = FbPost.builder().title("title").content("content").author("author").build();
-        when(fbPostRepository.findById(postId)).thenReturn(Optional.of(post));
+        FbPost post = FbPost.builder().title("title").content("content").user(testUser).build();
+        when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.of(post));
 
         // when
         FbPostResponse foundPost = fbPostService.getPost(postId);
 
         // then
         assertThat(foundPost.getTitle()).isEqualTo("title");
+        assertThat(foundPost.getAuthorName()).isEqualTo("testUser");
     }
 
     @Test
@@ -69,26 +89,28 @@ class FbPostServiceTest {
     void getPost_notFound() {
         // given
         Long postId = 1L;
-        when(fbPostRepository.findById(postId)).thenReturn(Optional.empty());
+        when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> fbPostService.getPost(postId))
-                .isInstanceOf(FbPostNotFoundException.class);
+                .isInstanceOf(PostNotFoundException.class);
     }
 
     @Test
     @DisplayName("게시글 생성")
     void createPost() {
         // given
-        FbPostRequest request = new FbPostRequest("title", "content", "author");
-        FbPost post = FbPost.builder().title("title").content("content").author("author").build();
+        FbPostRequest request = new FbPostRequest("title", "content");
+        FbPost post = FbPost.builder().title("title").content("content").user(testUser).build();
+        when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
         when(fbPostRepository.save(any(FbPost.class))).thenReturn(post);
 
         // when
-        FbPostResponse createdPost = fbPostService.createPost(request);
+        FbPostResponse createdPost = fbPostService.createPost(request, testUserId);
 
         // then
         assertThat(createdPost.getTitle()).isEqualTo("title");
+        assertThat(createdPost.getAuthorName()).isEqualTo("testUser");
     }
 
     @Test
@@ -96,16 +118,32 @@ class FbPostServiceTest {
     void updatePost() {
         // given
         Long postId = 1L;
-        FbPostRequest request = new FbPostRequest("new title", "new content", "new author");
-        FbPost post = FbPost.builder().title("title").content("content").author("author").build();
-        when(fbPostRepository.findById(postId)).thenReturn(Optional.of(post));
+        FbPostRequest request = new FbPostRequest("new title", "new content");
+        FbPost post = FbPost.builder().id(postId).title("title").content("content").user(testUser).build();
+        when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.of(post));
 
         // when
-        FbPostResponse updatedPost = fbPostService.updatePost(postId, request);
+        FbPostResponse updatedPost = fbPostService.updatePost(postId, request, testUserId);
 
         // then
         assertThat(updatedPost.getTitle()).isEqualTo("new title");
         assertThat(updatedPost.getContent()).isEqualTo("new content");
+        assertThat(updatedPost.getAuthorName()).isEqualTo("testUser");
+    }
+
+    @Test
+    @DisplayName("게시글 수정 권한 없음")
+    void updatePost_accessDenied() {
+        // given
+        Long postId = 1L;
+        Long anotherUserId = 2L;
+        FbPostRequest request = new FbPostRequest("new title", "new content");
+        FbPost post = FbPost.builder().id(postId).title("title").content("content").user(testUser).build();
+        when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.of(post));
+
+        // when & then
+        assertThatThrownBy(() -> fbPostService.updatePost(postId, request, anotherUserId))
+                .isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
@@ -113,13 +151,27 @@ class FbPostServiceTest {
     void deletePost() {
         // given
         Long postId = 1L;
-        FbPost post = FbPost.builder().title("title").content("content").author("author").build();
-        when(fbPostRepository.findById(postId)).thenReturn(Optional.of(post));
+        FbPost post = FbPost.builder().id(postId).title("title").content("content").user(testUser).build();
+        when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.of(post));
 
         // when
-        fbPostService.deletePost(postId);
+        fbPostService.deletePost(postId, testUserId);
 
         // then
         verify(fbPostRepository).delete(post);
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 권한 없음")
+    void deletePost_accessDenied() {
+        // given
+        Long postId = 1L;
+        Long anotherUserId = 2L;
+        FbPost post = FbPost.builder().id(postId).title("title").content("content").user(testUser).build();
+        when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.of(post));
+
+        // when & then
+        assertThatThrownBy(() -> fbPostService.deletePost(postId, anotherUserId))
+                .isInstanceOf(AccessDeniedException.class);
     }
 }
