@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidEmailPasswordException.class)
     public ResponseEntity<ApiResponse<?>> handleInvalidEmailPassword(InvalidEmailPasswordException ex) {
         return ResponseEntity
-                .status(HttpStatus.CONFLICT)
+                .status(HttpStatus.UNAUTHORIZED) // 401
                 .body(ApiResponse.error(ex.getMessage(), "INVALID_EMAIL_PASSWORD"));
     }
 

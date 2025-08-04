@@ -94,6 +94,7 @@ public class AuthService {
 
     // Refresh 토큰 재발급
     public TokenDto refreshToken(TokenDto tokendto) {
+        // 리프레쉬 토큰만 필요, 해더에 받아 진행시키기.
         String refreshToken = tokendto.getRefreshToken();
         // 1. 토큰 기본 유효성 검증 (서명, exp 등)
         if (!jwtTokenProvider.validateToken(refreshToken)) {
@@ -115,19 +116,18 @@ public class AuthService {
             throw new InvalidRefreshTokenException("리프레시 토큰이 일치하지 않습니다.");
         }
 
-        // 4. 유저 정보 조회 (역할 등)
+        // 5. 유저 정보 조회 (역할 등)
         Users user = userRepository.findById(userId).orElseThrow(() -> new InvalidRefreshTokenException("해당 토큰 사용자는 없습니다."));
 
-        // 5. 새 토큰 발급
+        // 6. 새 토큰 발급
         String newAccessToken = jwtTokenProvider.createAccessToken(userId, user.getRole());
         String newRefreshToken = jwtTokenProvider.createRefreshToken(userId, user.getRole());
 
         // 7. 기존 토큰 삭제
         refreshTokenStore.delete(userId);
 
-        // 6. 새로운 리프레시 토큰 저장(갱신)
+        // 8. 새로운 리프레시 토큰 저장(갱신)
         refreshTokenStore.save(userId, newRefreshToken, jwtTokenProvider.getExpiryFromToken(newRefreshToken).getTime());
         return new TokenDto(newAccessToken, newRefreshToken);
     }
-
 }
