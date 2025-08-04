@@ -5,10 +5,9 @@ import com.BugJava.EduConnect.freeboard.dto.FbPostResponse;
 import com.BugJava.EduConnect.freeboard.service.FbPostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,7 +15,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
-@PreAuthorize("hasAnyRole('STUDENT', 'INSTRUCTOR', 'ADMIN')")
 public class FbPostController {
 
     private final FbPostService postService;
@@ -38,7 +36,7 @@ public class FbPostController {
     public ResponseEntity<FbPostResponse> createPost(@RequestBody @Valid FbPostRequest request,
                                                      @AuthenticationPrincipal Long userId) {
         FbPostResponse created = postService.createPost(request, userId);
-        return ResponseEntity.ok(created); // 200 OK로 단순 처리
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /** 게시글 수정 */
@@ -52,9 +50,8 @@ public class FbPostController {
     /** 게시글 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id,
-                                          @AuthenticationPrincipal Long userId) {
+                                           @AuthenticationPrincipal Long userId) {
         postService.deletePost(id, userId);
-        return ResponseEntity.noContent().build(); // 204 No Content
+        return ResponseEntity.noContent().build();
     }
 }
-
