@@ -41,7 +41,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<Object>> refresh(@Valid @RequestBody TokenDto tokendto) {
+    public ResponseEntity<ApiResponse<TokenDto>> refresh(@Valid @RequestBody TokenDto tokendto) {
         TokenDto newTokens = authService.refreshToken(tokendto);
         return ResponseEntity.ok(ApiResponse.success(newTokens, "토큰이 재발급되었습니다."));
 

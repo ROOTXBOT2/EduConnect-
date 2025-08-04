@@ -9,6 +9,9 @@ public enum Role {
     STUDENT, INSTRUCTOR, ADMIN;
 
     public static Role fromString(String str) {
+        if (str == null) {
+            throw new IllegalArgumentException("Role cannot be null.");
+        }
         return Arrays.stream(Role.values())
                 .filter(t -> t.name().equalsIgnoreCase(str))
                 .findFirst()

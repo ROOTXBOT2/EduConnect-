@@ -39,6 +39,7 @@ public class InMemoryRefreshTokenStore implements RefreshTokenStore {
 
     @Override
     public void delete(Long userId) {
+        // 비인가 접근을 통한 Logout 요청시 어떻게 반환하는지.
         store.remove(userId);
     }
 }

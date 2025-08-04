@@ -5,6 +5,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,14 +37,16 @@ public class InMemoryTokenBlacklistService implements TokenBlacklistService {
     @Scheduled(fixedDelay = 60_000) // 1분마다 만료된 토큰 자동 정리 (운영환경엔 더 짧거나 길게 조정 가능)
     public void cleanupExpiredTokens() {
         LocalDateTime now = LocalDateTime.now();
+        Iterator<Map.Entry<String, LocalDateTime>> iterator = expiryMap.entrySet().iterator();
         int removedCount = 0;
-        for (Map.Entry<String, LocalDateTime> entry : expiryMap.entrySet()) {
+        while (iterator.hasNext()) {
+            Map.Entry<String, LocalDateTime> entry = iterator.next();
             if (entry.getValue().isBefore(now)) {
                 blacklist.remove(entry.getKey());
+                iterator.remove();
                 removedCount++;
             }
         }
-        expiryMap.entrySet().removeIf(entry -> entry.getValue().isBefore(now));
         if (removedCount > 0) {
             log.info("Expired tokens cleaned up: {}", removedCount);
         }
