@@ -4,6 +4,7 @@ import com.BugJava.EduConnect.common.filter.JwtAuthenticationFilter;
 import com.BugJava.EduConnect.common.handler.CustomAccessDeniedHandler;
 import com.BugJava.EduConnect.common.handler.CustomAuthenticationEntryPoint;
 import com.BugJava.EduConnect.common.service.JwtTokenProvider;
+import com.BugJava.EduConnect.common.service.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,7 @@ public class FreeboardSecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Bean
     @Order(1)
@@ -48,7 +50,7 @@ public class FreeboardSecurityConfig {
                         // 그 외 /api/posts/** 패턴의 모든 요청은 일단 허용 (이미 위에서 다 처리됨)
                         .anyRequest().permitAll()
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, tokenBlacklistService), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)

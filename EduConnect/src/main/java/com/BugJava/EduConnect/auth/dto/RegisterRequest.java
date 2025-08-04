@@ -8,7 +8,6 @@ import lombok.*;
 /**
  * @author rua
  */
-// @Data 대신 필요한 어노테이션만 사용
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,7 +19,6 @@ public class RegisterRequest {
     private String role = "STUDENT";
     private String track;
 
-    // Swagger에서 숨기기 위한 어노테이션 추가
     @JsonIgnore
     public Track getTrackEnum() {
         return Track.fromString(track);
