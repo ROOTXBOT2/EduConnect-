@@ -94,7 +94,7 @@ class FbCommentServiceTest {
         when(fbCommentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
         // when
-        fbCommentService.updateComment(commentId, request, testUserId);
+        fbCommentService.updateComment(commentId, request);
 
         // then
         verify(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
@@ -113,7 +113,7 @@ class FbCommentServiceTest {
         doThrow(new AccessDeniedException("권한이 없습니다.")).when(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
 
         // when & then
-        assertThatThrownBy(() -> fbCommentService.updateComment(commentId, request, testUserId))
+        assertThatThrownBy(() -> fbCommentService.updateComment(commentId, request))
                 .isInstanceOf(AccessDeniedException.class);
     }
 
@@ -127,7 +127,7 @@ class FbCommentServiceTest {
         when(fbCommentRepository.findById(commentId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> fbCommentService.updateComment(commentId, request, testUserId))
+        assertThatThrownBy(() -> fbCommentService.updateComment(commentId, request))
                 .isInstanceOf(CommentNotFoundException.class);
     }
 
@@ -141,7 +141,7 @@ class FbCommentServiceTest {
         when(fbCommentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
         // when
-        fbCommentService.deleteComment(commentId, testUserId);
+        fbCommentService.deleteComment(commentId);
 
         // then
         verify(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
@@ -159,7 +159,7 @@ class FbCommentServiceTest {
         doThrow(new AccessDeniedException("권한이 없습니다.")).when(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
 
         // when & then
-        assertThatThrownBy(() -> fbCommentService.deleteComment(commentId, testUserId))
+        assertThatThrownBy(() -> fbCommentService.deleteComment(commentId))
                 .isInstanceOf(AccessDeniedException.class);
     }
 }

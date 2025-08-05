@@ -121,7 +121,7 @@ class FbPostServiceTest {
         when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.of(post));
 
         // when
-        fbPostService.updatePost(postId, request, testUserId);
+        fbPostService.updatePost(postId, request);
 
         // then
         verify(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
@@ -139,7 +139,7 @@ class FbPostServiceTest {
         doThrow(new AccessDeniedException("권한이 없습니다.")).when(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
 
         // when & then
-        assertThatThrownBy(() -> fbPostService.updatePost(postId, request, testUserId))
+        assertThatThrownBy(() -> fbPostService.updatePost(postId, request))
                 .isInstanceOf(AccessDeniedException.class);
     }
 
@@ -152,7 +152,7 @@ class FbPostServiceTest {
         when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.of(post));
 
         // when
-        fbPostService.deletePost(postId, testUserId);
+        fbPostService.deletePost(postId);
 
         // then
         verify(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
@@ -169,7 +169,7 @@ class FbPostServiceTest {
         doThrow(new AccessDeniedException("권한이 없습니다.")).when(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
 
         // when & then
-        assertThatThrownBy(() -> fbPostService.deletePost(postId, testUserId))
+        assertThatThrownBy(() -> fbPostService.deletePost(postId))
                 .isInstanceOf(AccessDeniedException.class);
     }
 }

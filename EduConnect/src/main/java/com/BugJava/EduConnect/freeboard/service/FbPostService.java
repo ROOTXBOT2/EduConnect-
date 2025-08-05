@@ -52,7 +52,7 @@ public class FbPostService {
     }
 
     @Transactional
-    public FbPostResponse updatePost(Long id, FbPostRequest request, Long userId) {
+    public FbPostResponse updatePost(Long id, FbPostRequest request) {
         FbPost post = postRepository.findWithCommentsById(id)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 
@@ -65,7 +65,7 @@ public class FbPostService {
     }
 
     @Transactional
-    public void deletePost(Long id, Long userId) {
+    public void deletePost(Long id) {
         FbPost post = postRepository.findWithCommentsById(id)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 

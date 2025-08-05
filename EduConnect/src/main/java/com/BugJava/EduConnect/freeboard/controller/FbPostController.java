@@ -42,16 +42,14 @@ public class FbPostController {
     /** 게시글 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<FbPostResponse> updatePost(@PathVariable Long id,
-                                                     @RequestBody @Valid FbPostRequest request,
-                                                     @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(postService.updatePost(id, request, userId));
+                                                     @RequestBody @Valid FbPostRequest request) {
+        return ResponseEntity.ok(postService.updatePost(id, request));
     }
 
     /** 게시글 삭제 */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id,
-                                           @AuthenticationPrincipal Long userId) {
-        postService.deletePost(id, userId);
+    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+        postService.deletePost(id);
         return ResponseEntity.noContent().build();
     }
 }

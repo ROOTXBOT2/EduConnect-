@@ -50,7 +50,7 @@ public class FbCommentService {
     }
 
     @Transactional
-    public FbCommentResponse updateComment(Long id, FbCommentRequest request, Long userId) {
+    public FbCommentResponse updateComment(Long id, FbCommentRequest request) {
         FbComment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
 
@@ -62,7 +62,7 @@ public class FbCommentService {
     }
 
     @Transactional
-    public void deleteComment(Long id, Long userId) {
+    public void deleteComment(Long id) {
         FbComment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
 

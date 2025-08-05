@@ -28,16 +28,14 @@ public class FbCommentController {
     /** 댓글 수정 */
     @PutMapping("/{id}")
     public ResponseEntity<FbCommentResponse> updateComment(@PathVariable(name = "id") Long id,
-                                                           @RequestBody @Valid FbCommentRequest request,
-                                                           @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(commentService.updateComment(id, request, userId));
+                                                           @RequestBody @Valid FbCommentRequest request) {
+        return ResponseEntity.ok(commentService.updateComment(id, request));
     }
 
     /** 댓글 삭제 */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteComment(@PathVariable(name = "id") Long id,
-                                              @AuthenticationPrincipal Long userId) {
-        commentService.deleteComment(id, userId);
+    public ResponseEntity<Void> deleteComment(@PathVariable(name = "id") Long id) {
+        commentService.deleteComment(id);
         return ResponseEntity.noContent().build();
     }
 }
