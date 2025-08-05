@@ -2,12 +2,16 @@ package com.BugJava.EduConnect.auth.dto;
 
 import com.BugJava.EduConnect.auth.enums.Role;
 import com.BugJava.EduConnect.auth.enums.Track;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 
 /**
  * @author rua
  */
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class RegisterRequest {
     private String email;
     private String password;
@@ -15,9 +19,12 @@ public class RegisterRequest {
     private String role = "STUDENT";
     private String track;
 
+    @JsonIgnore
     public Track getTrackEnum() {
         return Track.fromString(track);
     }
+
+    @JsonIgnore
     public Role getRoleEnum() {
         return Role.fromString(role);
     }

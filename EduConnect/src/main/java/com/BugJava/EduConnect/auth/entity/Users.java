@@ -8,8 +8,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-import static com.BugJava.EduConnect.auth.enums.Role.STUDENT;
-
 /**
  * @author rua
  */
