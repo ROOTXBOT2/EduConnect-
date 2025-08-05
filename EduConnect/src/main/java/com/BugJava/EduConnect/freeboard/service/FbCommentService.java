@@ -1,5 +1,6 @@
 package com.BugJava.EduConnect.freeboard.service;
 
+import com.BugJava.EduConnect.auth.exception.UserNotFoundException;
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.auth.repository.UserRepository;
 import com.BugJava.EduConnect.common.util.AuthorizationUtil;
@@ -28,7 +29,7 @@ public class FbCommentService {
     public FbCommentResponse getComment(Long id) {
         FbComment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
-        return toResponse(comment);
+        return FbCommentResponse.from(comment);
     }
 
     @Transactional
@@ -37,7 +38,7 @@ public class FbCommentService {
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 
         Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new CommentNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         FbComment comment = FbComment.builder()
                 .content(request.getContent())
@@ -45,7 +46,7 @@ public class FbCommentService {
                 .post(post)
                 .build();
 
-        return toResponse(commentRepository.save(comment));
+        return FbCommentResponse.from(commentRepository.save(comment));
     }
 
     @Transactional
@@ -53,11 +54,11 @@ public class FbCommentService {
         FbComment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
 
-        authorizationUtil.checkOwnerOrAdmin(comment.getUser().getId(), userId);
+        authorizationUtil.checkOwnerOrAdmin(comment.getUser().getId());
 
         comment.setContent(request.getContent());
 
-        return toResponse(comment);
+        return FbCommentResponse.from(comment);
     }
 
     @Transactional
@@ -65,19 +66,8 @@ public class FbCommentService {
         FbComment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
 
-        authorizationUtil.checkOwnerOrAdmin(comment.getUser().getId(), userId);
+        authorizationUtil.checkOwnerOrAdmin(comment.getUser().getId());
 
         commentRepository.delete(comment);
-    }
-
-    private FbCommentResponse toResponse(FbComment comment) {
-        return FbCommentResponse.builder()
-                .id(comment.getId())
-                .content(comment.getContent())
-                .authorName(comment.getUser().getName())
-                .createdAt(comment.getCreatedAt())
-                .updatedAt(comment.getUpdatedAt())
-                .postId(comment.getPost().getId())
-                .build();
     }
 }

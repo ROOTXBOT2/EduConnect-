@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface FbPostRepository extends JpaRepository<FbPost, Long> {
     // 필요 시 검색 기능 추가
 
-    @EntityGraph(attributePaths = {"comments", "user"})
+    @EntityGraph(attributePaths = {"user", "comments.user"})
     Optional<FbPost> findWithCommentsById(Long id);
 
     @EntityGraph(attributePaths = "user")

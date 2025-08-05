@@ -1,12 +1,10 @@
 package com.BugJava.EduConnect.freeboard.domain;
 
+import com.BugJava.EduConnect.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import com.BugJava.EduConnect.auth.entity.Users;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class FbPost {
+public class FbPost extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,13 +31,6 @@ public class FbPost {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
-
-    @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
 
     // 추후 댓글, 대댓글 연관관계는 여기에 추가
     @Builder.Default

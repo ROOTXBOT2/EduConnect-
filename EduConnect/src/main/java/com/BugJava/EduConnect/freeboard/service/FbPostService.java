@@ -1,10 +1,10 @@
 package com.BugJava.EduConnect.freeboard.service;
 
+import com.BugJava.EduConnect.auth.exception.UserNotFoundException;
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.auth.repository.UserRepository;
 import com.BugJava.EduConnect.common.util.AuthorizationUtil;
 import com.BugJava.EduConnect.freeboard.domain.FbPost;
-import com.BugJava.EduConnect.freeboard.dto.FbCommentResponse;
 import com.BugJava.EduConnect.freeboard.dto.FbPostRequest;
 import com.BugJava.EduConnect.freeboard.dto.FbPostResponse;
 import com.BugJava.EduConnect.freeboard.exception.PostNotFoundException;
@@ -27,40 +27,20 @@ public class FbPostService {
 
     public List<FbPostResponse> getAllPosts() {
         return postRepository.findAll().stream()
-                .map(this::toResponse)
+                .map(FbPostResponse::fromWithoutComments)
                 .collect(Collectors.toList());
     }
 
     public FbPostResponse getPost(Long id) {
         FbPost post = postRepository.findWithCommentsById(id)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
-
-        List<FbCommentResponse> commentResponses = post.getComments().stream()
-                .map(comment -> FbCommentResponse.builder()
-                        .id(comment.getId())
-                        .content(comment.getContent())
-                        .authorName(comment.getUser().getName())
-                        .createdAt(comment.getCreatedAt())
-                        .updatedAt(comment.getUpdatedAt())
-                        .postId(post.getId())
-                        .build())
-                .collect(Collectors.toList());
-
-        return FbPostResponse.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .authorName(post.getUser().getName())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .comments(commentResponses)
-                .build();
+        return FbPostResponse.from(post);
     }
 
     @Transactional
     public FbPostResponse createPost(FbPostRequest request, Long userId) {
         Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new PostNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         FbPost post = FbPost.builder()
                 .title(request.getTitle())
@@ -68,7 +48,7 @@ public class FbPostService {
                 .user(user)
                 .build();
 
-        return toResponse(postRepository.save(post));
+        return FbPostResponse.fromWithoutComments(postRepository.save(post));
     }
 
     @Transactional
@@ -76,12 +56,12 @@ public class FbPostService {
         FbPost post = postRepository.findWithCommentsById(id)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 
-        authorizationUtil.checkOwnerOrAdmin(post.getUser().getId(), userId);
+        authorizationUtil.checkOwnerOrAdmin(post.getUser().getId());
 
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
 
-        return toResponse(post);
+        return FbPostResponse.from(post);
     }
 
     @Transactional
@@ -89,19 +69,8 @@ public class FbPostService {
         FbPost post = postRepository.findWithCommentsById(id)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 
-        authorizationUtil.checkOwnerOrAdmin(post.getUser().getId(), userId);
+        authorizationUtil.checkOwnerOrAdmin(post.getUser().getId());
 
         postRepository.delete(post);
-    }
-
-    private FbPostResponse toResponse(FbPost post) {
-        return FbPostResponse.builder()
-                .id(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .authorName(post.getUser().getName())
-                .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
-                .build();
     }
 }

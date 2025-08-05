@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import java.util.Optional;
 
 public interface FbCommentRepository extends JpaRepository<FbComment, Long> {
-    @EntityGraph(attributePaths = "user")
+    @EntityGraph(attributePaths = {"user", "post"})
     Optional<FbComment> findById(Long id);
 }
 
