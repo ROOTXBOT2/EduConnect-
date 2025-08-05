@@ -5,7 +5,7 @@ import com.BugJava.EduConnect.assignment.service.AssignmentService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -21,15 +21,9 @@ public class AssignmentController {
     //과제 등록
     @PostMapping
     public ResponseEntity<?> createAssignment(@Valid @RequestBody AssignmentRequest request,
-            BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getFieldErrors().stream()
-                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                    .reduce((msg1, msg2) -> msg1 + ", " + msg2)
-                    .orElse("검증 오류입니다.");
-            return ResponseEntity.badRequest().body(errorMessage);
-        }
-        AssignmentResponse created = assignmentService.createAssignment(request);
+                                              @AuthenticationPrincipal Long userId){
+
+        AssignmentResponse created = assignmentService.createAssignment(request, userId);
         return ResponseEntity.created(URI.create("/api/assignments/" + created.getId()))
                 .body(created);
     }
@@ -49,22 +43,14 @@ public class AssignmentController {
     //과제 수정
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateAssignment(@PathVariable Long id, @Valid @RequestBody AssignmentRequest request,
-            BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            String errorMessage = bindingResult.getFieldErrors().stream()
-                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                    .reduce((msg1, msg2) -> msg1 + ", " + msg2)
-                    .orElse("검증 오류입니다.");
-            return ResponseEntity.badRequest().body(errorMessage);
-        }
-
-        return ResponseEntity.ok(assignmentService.updateAssignment(id, request));
+                                              @AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(assignmentService.updateAssignment(id, request, userId));
     }
 
     //과제 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAssignment(@PathVariable Long id) {
-        assignmentService.deleteAssignment(id);
+    public ResponseEntity<Void> deleteAssignment(@PathVariable Long id, @AuthenticationPrincipal Long userId) {
+        assignmentService.deleteAssignment(id, userId);
         return ResponseEntity.noContent().build();
     }
 }

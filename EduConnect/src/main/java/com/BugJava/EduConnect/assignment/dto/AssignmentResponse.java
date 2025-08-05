@@ -13,7 +13,7 @@ public class AssignmentResponse {
     private Long id;
     private String title;
     private String description;
-    private Long user;
+    private String author;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -22,7 +22,7 @@ public class AssignmentResponse {
                 .id(assignment.getId())
                 .title(assignment.getTitle())
                 .description(assignment.getDescription())
-                //.username(assignment.getUser().getName())
+                .author(assignment.getUser().getName())
                 .createdAt(assignment.getCreatedAt())
                 .updatedAt(assignment.getUpdatedAt())
                 .build();

@@ -36,13 +36,13 @@ public class Users extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role = STUDENT; // "STUDENT,INSTRUCTOR"
+    private Role role; // "STUDENT,INSTRUCTOR"
 
     @Column(nullable = false)
-    private boolean isDeleted = false;
+    private boolean isDeleted;
 
     @Column
-    private LocalDateTime deletedAt = null;
+    private LocalDateTime deletedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
