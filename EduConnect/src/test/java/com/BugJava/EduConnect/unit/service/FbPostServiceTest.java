@@ -16,8 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.util.Arrays;
@@ -30,7 +28,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class FbPostServiceTest {
 
     @Mock
@@ -122,13 +119,13 @@ class FbPostServiceTest {
         FbPostRequest request = new FbPostRequest("new title", "new content");
         FbPost post = FbPost.builder().id(postId).title("title").content("content").user(testUser).build();
         when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.of(post));
-        doNothing().when(authorizationUtil).checkOwnerOrAdmin(anyLong(), anyLong());
 
         // when
-        FbPostResponse updatedPost = fbPostService.updatePost(postId, request, testUserId);
+        fbPostService.updatePost(postId, request, testUserId);
 
         // then
-        assertThat(updatedPost.getTitle()).isEqualTo("new title");
+        verify(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
+        assertThat(post.getTitle()).isEqualTo("new title");
     }
 
     @Test
@@ -136,14 +133,13 @@ class FbPostServiceTest {
     void updatePost_accessDenied() {
         // given
         Long postId = 1L;
-        Long anotherUserId = 2L;
         FbPostRequest request = new FbPostRequest("new title", "new content");
         FbPost post = FbPost.builder().id(postId).title("title").content("content").user(testUser).build();
         when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.of(post));
-        doThrow(new AccessDeniedException("권한이 없습니다.")).when(authorizationUtil).checkOwnerOrAdmin(anyLong(), anyLong());
+        doThrow(new AccessDeniedException("권한이 없습니다.")).when(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
 
         // when & then
-        assertThatThrownBy(() -> fbPostService.updatePost(postId, request, anotherUserId))
+        assertThatThrownBy(() -> fbPostService.updatePost(postId, request, testUserId))
                 .isInstanceOf(AccessDeniedException.class);
     }
 
@@ -154,12 +150,12 @@ class FbPostServiceTest {
         Long postId = 1L;
         FbPost post = FbPost.builder().id(postId).title("title").content("content").user(testUser).build();
         when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.of(post));
-        doNothing().when(authorizationUtil).checkOwnerOrAdmin(anyLong(), anyLong());
 
         // when
         fbPostService.deletePost(postId, testUserId);
 
         // then
+        verify(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
         verify(fbPostRepository).delete(post);
     }
 
@@ -168,13 +164,12 @@ class FbPostServiceTest {
     void deletePost_accessDenied() {
         // given
         Long postId = 1L;
-        Long anotherUserId = 2L;
         FbPost post = FbPost.builder().id(postId).title("title").content("content").user(testUser).build();
         when(fbPostRepository.findWithCommentsById(postId)).thenReturn(Optional.of(post));
-        doThrow(new AccessDeniedException("권한이 없습니다.")).when(authorizationUtil).checkOwnerOrAdmin(anyLong(), anyLong());
+        doThrow(new AccessDeniedException("권한이 없습니다.")).when(authorizationUtil).checkOwnerOrAdmin(testUser.getId());
 
         // when & then
-        assertThatThrownBy(() -> fbPostService.deletePost(postId, anotherUserId))
+        assertThatThrownBy(() -> fbPostService.deletePost(postId, testUserId))
                 .isInstanceOf(AccessDeniedException.class);
     }
 }
