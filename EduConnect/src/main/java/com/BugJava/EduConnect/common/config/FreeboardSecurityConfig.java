@@ -3,8 +3,6 @@ package com.BugJava.EduConnect.common.config;
 import com.BugJava.EduConnect.common.filter.JwtAuthenticationFilter;
 import com.BugJava.EduConnect.common.handler.CustomAccessDeniedHandler;
 import com.BugJava.EduConnect.common.handler.CustomAuthenticationEntryPoint;
-import com.BugJava.EduConnect.common.service.JwtTokenProvider;
-import com.BugJava.EduConnect.common.service.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,16 +17,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class FreeboardSecurityConfig {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
-    private final TokenBlacklistService tokenBlacklistService;
 
     @Bean
-    @Order(1)
+    @Order(1) // 우선 순위 설정 (default가 먼저 실행되어서 보안 정책이 적용되지 않는 문제 해결)
     public SecurityFilterChain freeboardFilterChain(HttpSecurity http) throws Exception {
         http
+                // 적용 범위 지정 (/api/posts/**)
                 .securityMatcher("/api/posts/**")
+
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
@@ -47,10 +46,9 @@ public class FreeboardSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/posts/*/comments/*").authenticated() // 수정: 로그인 필수
                         .requestMatchers(HttpMethod.DELETE, "/api/posts/*/comments/*").authenticated() // 삭제: 로그인 필수
 
-                        // 그 외 /api/posts/** 패턴의 모든 요청은 일단 허용 (이미 위에서 다 처리됨)
-                        .anyRequest().permitAll()
+                        .anyRequest().denyAll()
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, tokenBlacklistService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)

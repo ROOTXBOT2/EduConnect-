@@ -3,12 +3,9 @@ package com.BugJava.EduConnect.common.config;
 import com.BugJava.EduConnect.common.filter.JwtAuthenticationFilter;
 import com.BugJava.EduConnect.common.handler.CustomAccessDeniedHandler;
 import com.BugJava.EduConnect.common.handler.CustomAuthenticationEntryPoint;
-import com.BugJava.EduConnect.common.service.JwtTokenProvider;
-import com.BugJava.EduConnect.common.service.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -24,10 +21,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
-    private final TokenBlacklistService tokenBlacklistService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -49,7 +45,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 // JWT 필터 등록 위치
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider,tokenBlacklistService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)
