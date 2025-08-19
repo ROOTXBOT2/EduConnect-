@@ -1,5 +1,6 @@
 package com.BugJava.EduConnect.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class ApiResponse<T> {
     private String message;
     private T data;
     private String code;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp;
 
     public static <T> ApiResponse<T> success(T data) {
