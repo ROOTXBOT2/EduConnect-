@@ -1,10 +1,11 @@
-package com.BugJava.EduConnect.qnaboard.integration;
+package com.BugJava.EduConnect.integration.qnaboard;
 
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.auth.enums.Role;
 import com.BugJava.EduConnect.auth.enums.Track;
 import com.BugJava.EduConnect.auth.repository.UserRepository;
 import com.BugJava.EduConnect.common.service.JwtTokenProvider;
+import com.BugJava.EduConnect.integration.BaseIntegrationTest;
 import com.BugJava.EduConnect.qnaboard.dto.QuestionSearchRequest;
 import com.BugJava.EduConnect.qnaboard.entity.Question;
 import com.BugJava.EduConnect.qnaboard.repository.QuestionRepository;
@@ -13,28 +14,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * 간단한 QnA Search 테스트
+ * QnA Search 디버그 테스트
  * 
  * @author rua
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Transactional
-class QnaSearchSimpleTest {
+class QnaSearchDebugTest extends BaseIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
@@ -61,10 +54,10 @@ class QnaSearchSimpleTest {
                 .build());
 
         // JWT 토큰 생성
-        studentToken = jwtTokenProvider.createAccessToken(student.getId(), student.getRole());
+        studentToken = jwtTokenProvider.createAccessToken(student.getId(), student.getName(), student.getRole(), student.getTrack(), student.getEmail());
 
         // 테스트 데이터 생성
-        Question q1 = questionRepository.save(Question.builder()
+        questionRepository.save(Question.builder()
                 .user(student)
                 .title("Spring Boot 기초 질문")
                 .content("Spring Boot 설정에 대해")
@@ -72,23 +65,18 @@ class QnaSearchSimpleTest {
                 .isDeleted(false)
                 .build());
         
-        Question q2 = questionRepository.save(Question.builder()
+        questionRepository.save(Question.builder()
                 .user(student)
                 .title("React 질문입니다")
                 .content("React Hook에 대해")
                 .track(Track.FRONTEND)
                 .isDeleted(false)
                 .build());
-
-        System.out.println("=== 테스트 데이터 생성됨 ===");
-        System.out.println("Q1 ID: " + q1.getId() + ", Title: " + q1.getTitle());
-        System.out.println("Q2 ID: " + q2.getId() + ", Title: " + q2.getTitle());
-        System.out.println("총 질문 수: " + questionRepository.count());
     }
 
     @Test
-    @DisplayName("간단한 검색 테스트")
-    void simpleSearchTest() throws Exception {
+    @DisplayName("검색 디버그 테스트")
+    void debugSearch() throws Exception {
         // given
         QuestionSearchRequest searchRequest = QuestionSearchRequest.builder()
                 .keyword("Spring")
@@ -102,8 +90,25 @@ class QnaSearchSimpleTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String responseBody = result.getResponse().getContentAsString();
-        System.out.println("=== 검색 결과 ===");
-        System.out.println(responseBody);
+        System.out.println("Search Response: " + result.getResponse().getContentAsString());
+    }
+
+    @Test
+    @DisplayName("트랙 검색 디버그 테스트")
+    void debugTrackSearch() throws Exception {
+        // given
+        QuestionSearchRequest searchRequest = QuestionSearchRequest.builder()
+                .track(Track.BACKEND)
+                .build();
+
+        // when & then
+        MvcResult result = mockMvc.perform(post("/api/qna/questions/search")
+                .header("Authorization", "Bearer " + studentToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(searchRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        System.out.println("Track Search Response: " + result.getResponse().getContentAsString());
     }
 }

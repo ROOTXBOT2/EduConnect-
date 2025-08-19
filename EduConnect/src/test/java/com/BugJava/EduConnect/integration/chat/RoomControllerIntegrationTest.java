@@ -1,8 +1,8 @@
-package com.BugJava.EduConnect.integration;
+package com.BugJava.EduConnect.integration.chat;
 
-import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.auth.enums.Role;
 import com.BugJava.EduConnect.chat.dto.RoomRequest;
+import com.BugJava.EduConnect.integration.BaseIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

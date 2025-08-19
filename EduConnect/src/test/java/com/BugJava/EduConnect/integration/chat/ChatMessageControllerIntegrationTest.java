@@ -1,15 +1,15 @@
-package com.BugJava.EduConnect.integration;
+package com.BugJava.EduConnect.integration.chat;
 
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.auth.enums.Role;
 import com.BugJava.EduConnect.chat.domain.ChatMessage;
-import com.BugJava.EduConnect.chat.domain.ChatSession;
 import com.BugJava.EduConnect.chat.dto.*;
 import com.BugJava.EduConnect.chat.enums.MessageType;
 import com.BugJava.EduConnect.chat.repository.ChatMessageRepository;
 import com.BugJava.EduConnect.chat.service.ChatMessageService;
 import com.BugJava.EduConnect.chat.service.ChatSessionService;
 import com.BugJava.EduConnect.chat.service.RoomService;
+import com.BugJava.EduConnect.integration.BaseIntegrationTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -43,7 +43,7 @@ public class Users extends BaseEntity {
     private LocalDateTime deletedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(columnDefinition = "VARCHAR(255)")
     private Track track;
 
     public void updateProfile(String name, Track track) {

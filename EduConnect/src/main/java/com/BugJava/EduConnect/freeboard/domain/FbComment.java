@@ -6,7 +6,7 @@ import com.BugJava.EduConnect.auth.entity.Users;
 import lombok.*;
 
 @Entity
-@Table(name = "comments")
+@Table(name = "fb_comments")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

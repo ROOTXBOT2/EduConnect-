@@ -1,4 +1,4 @@
-package com.BugJava.EduConnect.qnaboard.utils;
+package com.BugJava.EduConnect.util;
 
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.auth.enums.Role;

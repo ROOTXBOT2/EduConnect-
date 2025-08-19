@@ -1,27 +1,23 @@
-package com.BugJava.EduConnect.qnaboard.integration;
+package com.BugJava.EduConnect.integration.qnaboard;
 
 import com.BugJava.EduConnect.auth.entity.Users;
-import com.BugJava.EduConnect.auth.enums.Role;
 import com.BugJava.EduConnect.auth.enums.Track;
 import com.BugJava.EduConnect.auth.repository.UserRepository;
 import com.BugJava.EduConnect.common.service.JwtTokenProvider;
+import com.BugJava.EduConnect.integration.BaseIntegrationTest;
 import com.BugJava.EduConnect.qnaboard.dto.QuestionSearchRequest;
 import com.BugJava.EduConnect.qnaboard.entity.Question;
 import com.BugJava.EduConnect.qnaboard.repository.QuestionRepository;
-import com.BugJava.EduConnect.qnaboard.utils.QnaTestDataBuilder;
+import com.BugJava.EduConnect.util.QnaTestDataBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 
  * @author rua
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Transactional
-class QnaSearchPerformanceTest {
+class QnaSearchPerformanceTest extends BaseIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
@@ -69,7 +61,7 @@ class QnaSearchPerformanceTest {
         testUser = userRepository.save(userToSave);
 
         // JWT 토큰 생성
-        userToken = jwtTokenProvider.createAccessToken(testUser.getId(), testUser.getRole());
+        userToken = jwtTokenProvider.createAccessToken(testUser.getId(), testUser.getName(), testUser.getRole(), testUser.getTrack(), testUser.getEmail());
     }
 
     @Test
@@ -177,8 +169,8 @@ class QnaSearchPerformanceTest {
     }
 
     @Test
-    @DisplayName("빈 키워드 검색 - 전체 목록 반환")
-    void searchWithEmptyKeyword() throws Exception {
+    @DisplayName("빈 키워드 검색 - 유효성 검사 실패 (400 에러)")
+    void searchWithEmptyKeyword_ValidationFail() throws Exception {
         // given
         questionRepository.save(QnaTestDataBuilder.createSampleQuestion(
                 testUser, "질문1", "내용1", Track.BACKEND));
@@ -194,8 +186,9 @@ class QnaSearchPerformanceTest {
                 .header("Authorization", "Bearer " + userToken)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(searchRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.content.length()").value(2));
+                .andExpect(status().isBadRequest()) // Expecting 400 Bad Request
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("검색어는 최소 2자 이상이어야 합니다"));
     }
 
     @Test

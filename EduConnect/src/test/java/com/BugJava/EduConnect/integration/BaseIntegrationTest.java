@@ -36,8 +36,8 @@ public abstract class BaseIntegrationTest {
     protected UserRepository userRepository;
 
     protected static class UserAuthInfo {
-        String accessToken;
-        Users user;
+        public String accessToken;
+        public Users user;
 
         UserAuthInfo(String accessToken, Users user) {
             this.accessToken = accessToken;

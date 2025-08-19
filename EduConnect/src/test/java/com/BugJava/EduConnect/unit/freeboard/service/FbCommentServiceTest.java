@@ -9,8 +9,8 @@ import com.BugJava.EduConnect.freeboard.domain.FbComment;
 import com.BugJava.EduConnect.freeboard.domain.FbPost;
 import com.BugJava.EduConnect.freeboard.dto.FbCommentRequest;
 import com.BugJava.EduConnect.freeboard.dto.FbCommentResponse;
-import com.BugJava.EduConnect.freeboard.exception.CommentNotFoundException;
-import com.BugJava.EduConnect.freeboard.exception.PostNotFoundException;
+import com.BugJava.EduConnect.freeboard.exception.FbCommentNotFoundException;
+import com.BugJava.EduConnect.freeboard.exception.FbPostNotFoundException;
 import com.BugJava.EduConnect.freeboard.repository.FbCommentRepository;
 import com.BugJava.EduConnect.freeboard.repository.FbPostRepository;
 import com.BugJava.EduConnect.freeboard.service.FbCommentService;
@@ -102,7 +102,7 @@ class FbCommentServiceTest {
 
             // when & then
             assertThatThrownBy(() -> fbCommentService.createComment(testPost.getId(), request, testUser.getId()))
-                    .isInstanceOf(PostNotFoundException.class);
+                    .isInstanceOf(FbPostNotFoundException.class);
         }
 
         @Test
@@ -164,7 +164,7 @@ class FbCommentServiceTest {
 
             // when & then
             assertThatThrownBy(() -> fbCommentService.updateComment(testPost.getId(), testComment.getId(), request)) // Added postId
-                    .isInstanceOf(CommentNotFoundException.class);
+                    .isInstanceOf(FbCommentNotFoundException.class);
         }
 
         @Test
