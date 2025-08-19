@@ -12,7 +12,10 @@ import com.BugJava.EduConnect.freeboard.exception.CommentNotFoundException;
 import com.BugJava.EduConnect.freeboard.exception.PostNotFoundException;
 import com.BugJava.EduConnect.freeboard.repository.FbCommentRepository;
 import com.BugJava.EduConnect.freeboard.repository.FbPostRepository;
+import com.BugJava.EduConnect.common.dto.PageResponse; // PageResponse 임포트
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page; // Page 임포트
+import org.springframework.data.domain.Pageable; // Pageable 임포트
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,11 @@ public class FbCommentService {
     private final FbPostRepository postRepository;
     private final UserRepository userRepository;
     private final AuthorizationUtil authorizationUtil;
+
+    public PageResponse<FbCommentResponse> getCommentsByPostId(Long postId, Pageable pageable) {
+        Page<FbComment> commentsPage = commentRepository.findByPostId(postId, pageable);
+        return new PageResponse<>(commentsPage.map(FbCommentResponse::from));
+    }
 
     public FbCommentResponse getComment(Long id) {
         FbComment comment = commentRepository.findById(id)
@@ -50,21 +58,30 @@ public class FbCommentService {
     }
 
     @Transactional
-    public FbCommentResponse updateComment(Long id, FbCommentRequest request) {
+    public FbCommentResponse updateComment(Long postId, Long id, FbCommentRequest request) {
         FbComment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
+
+        if (!comment.getPost().getId().equals(postId)) {
+            throw new IllegalArgumentException("해당 게시글에 속하지 않는 댓글입니다.");
+        }
 
         authorizationUtil.checkOwnerOrAdmin(comment.getUser().getId());
 
         comment.setContent(request.getContent());
+        commentRepository.save(comment); // 명시적 save 호출 추가
 
         return FbCommentResponse.from(comment);
     }
 
     @Transactional
-    public void deleteComment(Long id) {
+    public void deleteComment(Long postId, Long id) {
         FbComment comment = commentRepository.findById(id)
                 .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
+
+        if (!comment.getPost().getId().equals(postId)) {
+            throw new IllegalArgumentException("해당 게시글에 속하지 않는 댓글입니다.");
+        }
 
         authorizationUtil.checkOwnerOrAdmin(comment.getUser().getId());
 
