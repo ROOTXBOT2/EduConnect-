@@ -17,6 +17,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+    private final ObjectMapper objectMapper; // ObjectMapper 주입
+
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException {
@@ -41,7 +43,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
         response.setContentType("application/json");
         response.getWriter().write(
-                new ObjectMapper().writeValueAsString(apiResponse)
+                objectMapper.writeValueAsString(apiResponse) // 주입받은 ObjectMapper 사용
         );
     }
 }
