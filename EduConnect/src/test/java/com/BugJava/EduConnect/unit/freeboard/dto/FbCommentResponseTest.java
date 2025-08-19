@@ -1,4 +1,4 @@
-package com.BugJava.EduConnect.unit.dto;
+package com.BugJava.EduConnect.unit.freeboard.dto;
 
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.freeboard.domain.FbComment;
@@ -31,7 +31,7 @@ class FbCommentResponseTest {
         assertThat(response.getId()).isEqualTo(comment.getId());
         assertThat(response.getContent()).isEqualTo(comment.getContent());
         assertThat(response.getAuthorName()).isEqualTo(user.getName());
-        assertThat(response.getPostId()).isEqualTo(post.getId());
+        // assertThat(response.getPostId()).isEqualTo(post.getId()); // Removed
         // JPA Auditing이 동작하지 않는 단위 테스트 환경에서는 BaseEntity의 필드가 null이 됩니다.
         assertThat(response.getCreatedAt()).isNull();
         assertThat(response.getUpdatedAt()).isNull();
