@@ -44,15 +44,19 @@ public class AuthService {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         // 3. Users 엔티티 생성 (빌더 패턴 + 기본값 포함)
-        Users user = Users.builder()
+        Users.UsersBuilder userBuilder = Users.builder()
                 .email(request.getEmail())
                 .password(encodedPassword)
                 .name(request.getName())
-                .role(request.getRole() != null ? request.getRoleEnum() : Role.STUDENT) // 기본값 STUDENT
-                .track(request.getTrackEnum())
+                .role(request.getRoleEnum())
                 .isDeleted(false)
-                .deletedAt(null)
-                .build();
+                .deletedAt(null);
+
+        if (request.getRoleEnum() == Role.STUDENT) {
+            userBuilder.track(request.getTrackEnum());
+        }
+
+        Users user = userBuilder.build();
         return userRepository.save(user);
     }
 

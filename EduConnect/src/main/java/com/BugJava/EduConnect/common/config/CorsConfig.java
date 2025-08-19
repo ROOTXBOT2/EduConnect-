@@ -21,10 +21,10 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // 허용할 Origin 설정 (프론트엔드 URL)
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000", "http://192.168.0.5:3000"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000", "http://192.168.0.5:3000", "http://localhost:5173"));
         
         // 허용할 HTTP 메서드
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         
         // 허용할 헤더
         configuration.setAllowedHeaders(Arrays.asList("*"));
