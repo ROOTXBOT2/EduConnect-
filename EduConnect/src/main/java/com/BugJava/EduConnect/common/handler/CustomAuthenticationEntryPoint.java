@@ -40,8 +40,11 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         ApiResponse<?> apiResponse = ApiResponse.error(message, code);
 
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
-        objectMapper.writeValue(response.getOutputStream(), apiResponse);
+
+        response.getWriter().write(
+                objectMapper.writeValueAsString(apiResponse)
+        );
     }
 }
