@@ -21,6 +21,9 @@ public class RegisterRequest {
 
     @JsonIgnore
     public Track getTrackEnum() {
+        if (track == null) {
+            return null;
+        }
         return Track.fromString(track);
     }
 

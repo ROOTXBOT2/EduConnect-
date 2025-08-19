@@ -1,12 +1,12 @@
 package com.BugJava.EduConnect.assignment.domain;
 
 import com.BugJava.EduConnect.auth.entity.Users;
+import com.BugJava.EduConnect.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "assignment")
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Assignment {
+public class Assignment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,11 +32,18 @@ public class Assignment {
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
 
-    @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
+    @Builder.Default
+    @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AssignmentComment> comments = new ArrayList<>();
 
-    @UpdateTimestamp
-    @Column
-    private LocalDateTime updatedAt;
+    public void addComment(AssignmentComment comment) {
+        comments.add(comment);
+        comment.setAssignment(this);
+    }
+
+    public void removeComment(AssignmentComment comment) {
+        comments.remove(comment);
+        comment.setAssignment(null);
+    }
+
 }

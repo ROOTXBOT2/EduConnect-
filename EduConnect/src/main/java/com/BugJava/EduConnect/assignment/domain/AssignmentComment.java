@@ -1,12 +1,17 @@
 package com.BugJava.EduConnect.assignment.domain;
 
+import com.BugJava.EduConnect.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import com.BugJava.EduConnect.auth.entity.Users;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import org.hibernate.annotations.BatchSize;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "assignmentcomments")
@@ -15,7 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class Comment {
+public class AssignmentComment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,13 +38,13 @@ public class Comment {
     @Column(nullable = false)
     private String content;
 
-    @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private AssignmentComment parent;
 
-    @UpdateTimestamp
-    @Column
-    private LocalDateTime updatedAt;
-
+    @Builder.Default
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @BatchSize(size = 10)
+    private List<AssignmentComment> children = new ArrayList<>();
 
 }

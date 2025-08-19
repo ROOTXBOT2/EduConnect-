@@ -7,11 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -19,38 +18,44 @@ import org.springframework.web.cors.CorsConfigurationSource;
 /**
  * @author rua
  */
+
 @Configuration
-@EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+@EnableWebSecurity
+public class QnASecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
+    @Order(3) // 우선 순위 설정 (default가 먼저 실행되어서 보안 정책이 적용되지 않는 문제 해결)
+    public SecurityFilterChain qnaboardFilterChain(HttpSecurity http) throws Exception {
         http
-                // REST API를 위한 설정
+                // 적용 범위 지정 (/api/qna/**)
+                .securityMatcher("/api/qna/**")
+
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
-                //.securityMatcher() //큰 범위로 지정할때 사용
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
                 // CORS 설정 추가
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**", "/swagger-ui/**", "/openapi/**","/auth/**").permitAll() // 로그인/회원가입 등은 오픈
-                        .requestMatchers("/api/user/me").authenticated() // 사용자 정보 조회는 로그인 필수
-                        .anyRequest().authenticated()
+                        // QnA 권한 설정 
+                        .requestMatchers(HttpMethod.GET, "/api/qna/questions").authenticated() // 목록 조회: 로그인 필수
+                        .requestMatchers(HttpMethod.POST, "/api/qna/questions/search").authenticated() // 검색: 로그인 필수
+                        .requestMatchers(HttpMethod.GET, "/api/qna/questions/*").authenticated() // 상세 조회: 로그인 필수
+                        .requestMatchers(HttpMethod.POST, "/api/qna/questions").authenticated() // 생성: 로그인 필수
+                        .requestMatchers(HttpMethod.PUT, "/api/qna/questions/*").authenticated() // 수정: 로그인 필수
+                        .requestMatchers(HttpMethod.DELETE, "/api/qna/questions/*").authenticated() // 삭제: 로그인 필수
+                        
+                        // Answer와 Comment 관련 API도 인증 필요
+                        .requestMatchers("/api/qna/questions/*/answers/**").authenticated()
+                        .requestMatchers("/api/qna/questions/*/comments/**").authenticated()
+                        
+                        .anyRequest().denyAll()
                 )
-                // JWT 필터 등록 위치
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
@@ -59,4 +64,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 }

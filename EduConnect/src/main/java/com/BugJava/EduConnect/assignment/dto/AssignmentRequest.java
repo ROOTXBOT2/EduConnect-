@@ -1,16 +1,14 @@
 package com.BugJava.EduConnect.assignment.dto;
 
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import jakarta.validation.constraints.NotBlank;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AssignmentRequest {
 
     @NotBlank(message = "제목은 필수입니다.")

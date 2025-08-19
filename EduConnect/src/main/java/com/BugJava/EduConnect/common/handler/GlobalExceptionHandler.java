@@ -2,8 +2,11 @@ package com.BugJava.EduConnect.common.handler;
 
 import com.BugJava.EduConnect.auth.exception.*;
 import com.BugJava.EduConnect.common.dto.ApiResponse;
+import com.BugJava.EduConnect.assignment.exception.*;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -12,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  */
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class  GlobalExceptionHandler {
     //이메일 중복
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<ApiResponse<?>> handleDuplicateEmail(DuplicateEmailException ex) {
@@ -53,6 +56,37 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage(), "INVALID_ACCESS_TOKEN"));
     }
 
+    //Assignment 모듈 예외 처리
+    @ExceptionHandler (PostNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handlePostNotFound(PostNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage(), "NOT_FOUND"));
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleCommentNotFound(CommentNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage(), "NOT_FOUND"));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<?>> handleAccessDeniedException(AccessDeniedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(ex.getMessage(), "ACCESS_DENIED"));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<?>> handleValidationException(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(error -> error.getDefaultMessage())
+                .orElse("잘못된 요청입니다.");
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(message, "VALIDATION_ERROR"));
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleAll(Exception ex) {
@@ -60,4 +94,6 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("알 수 없는 서버 오류: " + ex.getMessage(),"UNKNOWN_ERROR"));
     }
+
+
 }
