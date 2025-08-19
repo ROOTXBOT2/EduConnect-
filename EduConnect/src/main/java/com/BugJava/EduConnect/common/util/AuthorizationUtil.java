@@ -16,11 +16,9 @@ public class AuthorizationUtil {
     public void checkOwnerOrAdmin(Long ownerId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof Long)) {
+        if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof Long currentUserId)) {
             throw new AccessDeniedException("인증되지 않은 사용자입니다.");
         }
-
-        Long currentUserId = (Long) authentication.getPrincipal();
 
         boolean isAdmin = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)

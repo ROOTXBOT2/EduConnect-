@@ -17,6 +17,7 @@ public class FbPostResponse {
     private String title;
     private String content;
     private String authorName;
+    private Long authorId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<FbCommentResponse> comments;
@@ -31,6 +32,7 @@ public class FbPostResponse {
                 .title(post.getTitle())
                 .content(post.getContent())
                 .authorName(post.getUser().getName())
+                .authorId(post.getUser().getId())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .comments(commentResponses)
@@ -43,6 +45,7 @@ public class FbPostResponse {
                 .title(post.getTitle())
                 .content(post.getContent())
                 .authorName(post.getUser().getName())
+                .authorId(post.getUser().getId())
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
                 .build();

@@ -9,12 +9,17 @@ import com.BugJava.EduConnect.freeboard.dto.FbPostRequest;
 import com.BugJava.EduConnect.freeboard.dto.FbPostResponse;
 import com.BugJava.EduConnect.freeboard.exception.PostNotFoundException;
 import com.BugJava.EduConnect.freeboard.repository.FbPostRepository;
+import com.BugJava.EduConnect.common.dto.PageResponse; // PageResponse 임포트
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page; // Page 임포트
+import org.springframework.data.domain.Pageable; // Pageable 임포트
+import org.springframework.data.jpa.domain.Specification; // Specification 임포트
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils; // StringUtils 임포트
 
-import java.util.List;
-import java.util.stream.Collectors;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +30,40 @@ public class FbPostService {
     private final UserRepository userRepository;
     private final AuthorizationUtil authorizationUtil;
 
-    public List<FbPostResponse> getAllPosts() {
-        return postRepository.findAll().stream()
-                .map(FbPostResponse::fromWithoutComments)
-                .collect(Collectors.toList());
+    public PageResponse<FbPostResponse> getAllPosts(Pageable pageable, String searchType, String searchKeyword) {
+        Specification<FbPost> spec = (root, query, criteriaBuilder) -> {
+            if (!StringUtils.hasText(searchKeyword)) {
+                return null; // 검색 키워드가 없으면 조건 없음
+            }
+
+            // 검색 키워드 및 컬럼 값 정규화 (소문자 변환 및 공백 제거)
+            String normalizedSearchKeyword = searchKeyword.toLowerCase().replace(" ", "");
+
+            switch (searchType) {
+                case "title":
+                    return criteriaBuilder.like(
+                            criteriaBuilder.lower(criteriaBuilder.function("REPLACE", String.class, root.get("title").as(String.class), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                            "%" + normalizedSearchKeyword + "%"
+                    );
+                case "content":
+                    return criteriaBuilder.like(
+                            criteriaBuilder.lower(criteriaBuilder.function("REPLACE", String.class, root.get("content").as(String.class), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                            "%" + normalizedSearchKeyword + "%"
+                    );
+                case "author":
+                    Join<FbPost, Users> userJoin = root.join("user", JoinType.INNER);
+                    return criteriaBuilder.like(
+                            criteriaBuilder.lower(criteriaBuilder.function("REPLACE", String.class, userJoin.get("name").as(String.class), criteriaBuilder.literal(" "), criteriaBuilder.literal(""))),
+                            "%" + normalizedSearchKeyword + "%"
+                    );
+                default:
+                    return null;
+            }
+        };
+
+        Page<FbPost> postsPage = postRepository.findAll(spec, pageable);
+        Page<FbPostResponse> dtoPage = postsPage.map(FbPostResponse::fromWithoutComments);
+        return new PageResponse<>(dtoPage);
     }
 
     public FbPostResponse getPost(Long id) {
@@ -52,7 +87,7 @@ public class FbPostService {
     }
 
     @Transactional
-    public FbPostResponse updatePost(Long id, FbPostRequest request, Long userId) {
+    public FbPostResponse updatePost(Long id, FbPostRequest request) {
         FbPost post = postRepository.findWithCommentsById(id)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 
@@ -65,7 +100,7 @@ public class FbPostService {
     }
 
     @Transactional
-    public void deletePost(Long id, Long userId) {
+    public void deletePost(Long id) {
         FbPost post = postRepository.findWithCommentsById(id)
                 .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
 

@@ -1,4 +1,4 @@
-package com.BugJava.EduConnect.unit.dto;
+package com.BugJava.EduConnect.unit.freeboard.dto;
 
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.freeboard.domain.FbComment;

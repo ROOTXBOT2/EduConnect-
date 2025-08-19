@@ -1,6 +1,7 @@
 package com.BugJava.EduConnect.common.service;
 
 import com.BugJava.EduConnect.auth.enums.Role;
+import com.BugJava.EduConnect.auth.enums.Track; // Track Enum 임포트 추가
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -39,13 +40,16 @@ public class JwtTokenProvider {
     }
 
     // 1. AccessToken 생성 (신규 Builder API)
-    public String createAccessToken(Long userId, Role role) {
+    public String createAccessToken(Long userId, String name, Role role, Track track, String email) { // name, track, email 파라미터 추가
         final Date now = new Date();
         final Date expiry = new Date(now.getTime() + accessTokenValidity);
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))    // (구) setSubject() → (신) subject()
+                .claim("name", name)     // name 클레임 추가
                 .claim("role", role)
+                .claim("track", track)   // track 클레임 추가
+                .claim("email", email)   // email 클레임 추가
                 .issuedAt(new Date())
                 .expiration(expiry)
                 .signWith(jwtSecretKey)                      // SignatureAlgorithm 생략, key로 감지

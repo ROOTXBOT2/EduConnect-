@@ -16,6 +16,7 @@ public class FbPostRequest {
     private String title;
 
     @NotBlank(message = "내용은 필수입니다.")
+    @Size(max = 1048576, message = "내용은 1MB(1,048,576자)를 초과할 수 없습니다.")
     private String content;
 
     

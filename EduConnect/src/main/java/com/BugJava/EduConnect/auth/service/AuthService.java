@@ -71,7 +71,7 @@ public class AuthService {
         }
 
         // 3. 토큰 발급
-        String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRole());
+        String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getName(), user.getRole(), user.getTrack(), user.getEmail());
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId(), user.getRole());
         // RefreshToken 만료일 추출
         Date expiry = jwtTokenProvider.getExpiryFromToken(refreshToken);
@@ -124,7 +124,7 @@ public class AuthService {
         Users user = userRepository.findById(userId).orElseThrow(() -> new InvalidRefreshTokenException("해당 토큰 사용자는 없습니다."));
 
         // 6. 새 토큰 발급
-        String newAccessToken = jwtTokenProvider.createAccessToken(userId, user.getRole());
+        String newAccessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getName(), user.getRole(), user.getTrack(), user.getEmail());
         String newRefreshToken = jwtTokenProvider.createRefreshToken(userId, user.getRole());
 
         // 7. 기존 토큰 삭제

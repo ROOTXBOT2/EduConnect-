@@ -2,6 +2,7 @@ package com.BugJava.EduConnect.common.handler;
 
 import com.BugJava.EduConnect.assignment.exception.CommentNotFoundException;
 import com.BugJava.EduConnect.auth.exception.*;
+import com.BugJava.EduConnect.chat.exception.*;
 import com.BugJava.EduConnect.common.dto.ApiResponse;
 import com.BugJava.EduConnect.assignment.exception.*;
 import org.springframework.security.access.AccessDeniedException;
@@ -11,6 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.security.access.AccessDeniedException;
+import com.BugJava.EduConnect.freeboard.exception.PostNotFoundException;
+import com.BugJava.EduConnect.freeboard.exception.CommentNotFoundException;
+import java.util.stream.Collectors;
 
 /**
  * @author rua
@@ -88,6 +94,99 @@ public class  GlobalExceptionHandler {
         return ResponseEntity
                 .status(403)
                 .body(ApiResponse.error(ex.getMessage(), "INVALID_ACCESS"));
+    }
+
+
+    // freeboard 모듈 예외 처리
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<?>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(errorMessage, "VALIDATION_FAILED"));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<?>> handleAccessDeniedException(AccessDeniedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(ex.getMessage(), "ACCESS_DENIED"));
+    }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handlePostNotFoundException(PostNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage(), "POST_NOT_FOUND"));
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleCommentNotFoundException(CommentNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage(), "COMMENT_NOT_FOUND"));
+    }
+
+
+
+    // Chat 모듈 예외 처리
+    @ExceptionHandler(RoomNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleRoomNotFoundException(RoomNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage(), "ROOM_NOT_FOUND"));
+    }
+
+    @ExceptionHandler(ChatSessionNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleChatSessionNotFoundException(ChatSessionNotFoundException ex) {
+        return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error(ex.getMessage(), "CHAT_SESSION_NOT_FOUND"));
+    }
+
+    @ExceptionHandler(SessionNotStartedException.class)
+    public ResponseEntity<ApiResponse<?>> handleSessionNotStartedException(SessionNotStartedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(ex.getMessage(), "SESSION_NOT_STARTED"));
+    }
+
+    @ExceptionHandler(ChatMessageNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleChatMessageNotFoundException(ChatMessageNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage(), "CHAT_MESSAGE_NOT_FOUND"));
+    }
+
+    @ExceptionHandler(UnauthorizedMessageAccessException.class)
+    public ResponseEntity<ApiResponse<?>> handleUnauthorizedMessageAccessException(UnauthorizedMessageAccessException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(ex.getMessage(), "UNAUTHORIZED_MESSAGE_ACCESS"));
+    }
+
+    @ExceptionHandler(AlreadyEnrolledException.class)
+    public ResponseEntity<ApiResponse<?>> handleAlreadyEnrolledException(AlreadyEnrolledException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(ex.getMessage(), "ALREADY_ENROLLED"));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<?>> handleIllegalStateException(IllegalStateException ex) {
+        // EnrollmentService에서 이미 참여 중인 경우 등
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(ex.getMessage(), "CONFLICT_STATE"));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(ex.getMessage(), "INVALID_ARGUMENT"));
     }
 
     @ExceptionHandler(Exception.class)

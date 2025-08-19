@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 @ActiveProfiles("test")
 public abstract class BaseIntegrationTest {
 
-
     @Autowired
     protected MockMvc mockMvc;
 
