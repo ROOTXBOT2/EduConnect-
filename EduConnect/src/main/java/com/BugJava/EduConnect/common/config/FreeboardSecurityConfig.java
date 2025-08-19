@@ -36,6 +36,8 @@ public class FreeboardSecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // CORS 설정 추가
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
                         // OPTIONS 메서드는 인증 없이 허용
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

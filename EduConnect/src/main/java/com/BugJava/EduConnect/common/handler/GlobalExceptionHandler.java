@@ -3,8 +3,10 @@ package com.BugJava.EduConnect.common.handler;
 import com.BugJava.EduConnect.auth.exception.*;
 import com.BugJava.EduConnect.chat.exception.*;
 import com.BugJava.EduConnect.common.dto.ApiResponse;
+import com.BugJava.EduConnect.qnaboard.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -58,7 +60,12 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.UNAUTHORIZED) // 401
                 .body(ApiResponse.error(ex.getMessage(), "INVALID_ACCESS_TOKEN"));
     }
-
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<?>> handleAccessDeniedException(Exception ex) {
+        return ResponseEntity
+                .status(403)
+                .body(ApiResponse.error(ex.getMessage(),"INVALID_ACCESS"));
+    }
 
 
     // freeboard 모듈 예외 처리
@@ -158,5 +165,43 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("알 수 없는 서버 오류: " + ex.getMessage(),"UNKNOWN_ERROR"));
+    }
+
+    @ExceptionHandler(QuestionNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleNotFound(QuestionNotFoundException ex) {
+        return ResponseEntity
+                .status(404)
+                .body(ApiResponse.error(ex.getMessage(), "QUESTION_NOT_FOUND"));
+    }
+
+    @ExceptionHandler(AnswerNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleAnswerNotFound(AnswerNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage(), "ANSWER_NOT_FOUND"));
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleCommentNotFound(CommentNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(ex.getMessage(), "COMMENT_NOT_FOUND"));
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiResponse<?>> handleForbidden(ForbiddenException ex) {
+        return ResponseEntity.status(403).body(ApiResponse.error(ex.getMessage(),"INVALID_ACCESS"));
+    }
+
+    // Bean Validation 오류 처리
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<?>> handleValidation(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().isEmpty() 
+            ? "입력 데이터가 올바르지 않습니다" 
+            : ex.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
+        
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST) // 400
+                .body(ApiResponse.error(message, "VALIDATION_ERROR"));
     }
 }

@@ -6,7 +6,7 @@ import java.util.Arrays;
  * @author rua
  */
 public enum Track {
-    BACKEND, FRONTEND, FULLSTACK;
+    BACKEND, FRONTEND, FULLSTACK, TRACK_INSTRUCTOR;
     public static Track fromString(String str) {
         //로그로 남길 곳
         if (str == null) {
