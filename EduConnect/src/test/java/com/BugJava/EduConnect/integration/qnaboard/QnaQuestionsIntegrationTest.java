@@ -1,10 +1,11 @@
-package com.BugJava.EduConnect.qnaboard.integration;
+package com.BugJava.EduConnect.integration.qnaboard;
 
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.auth.enums.Role;
 import com.BugJava.EduConnect.auth.enums.Track;
 import com.BugJava.EduConnect.auth.repository.UserRepository;
 import com.BugJava.EduConnect.common.service.JwtTokenProvider;
+import com.BugJava.EduConnect.integration.BaseIntegrationTest;
 import com.BugJava.EduConnect.qnaboard.dto.QuestionCreateRequest;
 import com.BugJava.EduConnect.qnaboard.dto.QuestionSearchRequest;
 import com.BugJava.EduConnect.qnaboard.entity.Question;
@@ -15,15 +16,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,11 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 
  * @author rua
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Transactional
-class QnaQuestionsIntegrationTest {
+class QnaQuestionsIntegrationTest extends BaseIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
@@ -70,9 +62,9 @@ class QnaQuestionsIntegrationTest {
         anotherStudent = createUser("student2@test.com", "다른학생", Role.STUDENT, Track.FRONTEND);
 
         // JWT 토큰 생성
-        studentToken = jwtTokenProvider.createAccessToken(student.getId(), student.getRole());
-        instructorToken = jwtTokenProvider.createAccessToken(instructor.getId(), instructor.getRole());
-        anotherStudentToken = jwtTokenProvider.createAccessToken(anotherStudent.getId(), anotherStudent.getRole());
+        studentToken = jwtTokenProvider.createAccessToken(student.getId(), student.getName(), student.getRole(), student.getTrack(), student.getEmail());
+        instructorToken = jwtTokenProvider.createAccessToken(instructor.getId(), instructor.getName(), instructor.getRole(), instructor.getTrack(), instructor.getEmail());
+        anotherStudentToken = jwtTokenProvider.createAccessToken(anotherStudent.getId(), anotherStudent.getName(), anotherStudent.getRole(), anotherStudent.getTrack(), anotherStudent.getEmail());
     }
 
     private Users createUser(String email, String name, Role role, Track track) {
@@ -99,21 +91,37 @@ class QnaQuestionsIntegrationTest {
             request.setContent("JPA EntityManager에 대해 궁금합니다.");
             request.setTrack(Track.BACKEND);
 
-            // when & then
-            mockMvc.perform(post("/api/qna/questions")
-                    .header("Authorization", "Bearer " + studentToken)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.success").value(true))
-                    .andExpect(jsonPath("$.message").value("QnA 등록 완료"));
+            try {
+                // when & then
+                mockMvc.perform(post("/api/qna/questions")
+                        .header("Authorization", "Bearer " + studentToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.success").value(true))
+                        .andExpect(jsonPath("$.message").value("QnA 등록 완료"));
 
-            // DB 검증
-            assertThat(questionRepository.count()).isEqualTo(1);
-            Question savedQuestion = questionRepository.findAll().get(0);
-            assertThat(savedQuestion.getTitle()).isEqualTo("Spring Boot 질문입니다");
-            assertThat(savedQuestion.getUser().getId()).isEqualTo(student.getId());
-            assertThat(savedQuestion.getTrack()).isEqualTo(Track.BACKEND);
+                // DB 검증
+                assertThat(questionRepository.count()).isEqualTo(1);
+                Question savedQuestion = questionRepository.findAll().get(0);
+                assertThat(savedQuestion.getTitle()).isEqualTo("Spring Boot 질문입니다");
+                assertThat(savedQuestion.getUser().getId()).isEqualTo(student.getId());
+                assertThat(savedQuestion.getTrack()).isEqualTo(Track.BACKEND);
+            } catch (Exception e) {
+                System.err.println("Test failed with exception: " + e.getMessage());
+                Throwable cause = e.getCause();
+                while (cause != null) {
+                    System.err.println("Caused by: " + cause.getMessage());
+                    if (cause instanceof java.sql.SQLException) {
+                        System.err.println("SQLState: " + ((java.sql.SQLException) cause).getSQLState());
+                        System.err.println("Error Code: " + ((java.sql.SQLException) cause).getErrorCode());
+                        // The SQL statement is often part of the message for SQL exceptions
+                        System.err.println("SQL Exception Message: " + cause.getMessage());
+                    }
+                    cause = cause.getCause();
+                }
+                throw e; // Re-throw to ensure the test still fails
+            }
         }
 
         @Test
@@ -467,8 +475,8 @@ class QnaQuestionsIntegrationTest {
         }
 
         @Test 
-        @DisplayName("질문 수정 기능 - 아직 구현되지 않음 (500 에러)")
-        void updateQuestion_NotImplemented() throws Exception {
+        @DisplayName("질문 수정 기능 - 유효하지 않은 요청 (400 에러)")
+        void updateQuestion_InvalidRequest_BadRequest() throws Exception {
             // given
             Question question = questionRepository.save(Question.builder()
                     .user(student)
@@ -478,12 +486,12 @@ class QnaQuestionsIntegrationTest {
                     .isDeleted(false)
                     .build());
 
-            // when & then - 수정 기능이 구현되지 않아 500 에러 발생
+            // when & then - 유효하지 않은 요청으로 400 에러 발생
             mockMvc.perform(put("/api/qna/questions/{id}", question.getId())
                     .header("Authorization", "Bearer " + studentToken)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}")) // 빈 업데이트 요청
-                    .andExpect(status().isInternalServerError());
+                    .andExpect(status().isBadRequest());
         }
 
         @Test

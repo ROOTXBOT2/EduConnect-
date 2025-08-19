@@ -10,7 +10,7 @@ import com.BugJava.EduConnect.qnaboard.entity.Answer;
 import com.BugJava.EduConnect.qnaboard.entity.Comment;
 import com.BugJava.EduConnect.qnaboard.exception.AccessDeniedException;
 import com.BugJava.EduConnect.qnaboard.exception.AnswerNotFoundException;
-import com.BugJava.EduConnect.qnaboard.exception.CommentNotFoundException;
+import com.BugJava.EduConnect.qnaboard.exception.QnaCommentNotFoundException;
 import com.BugJava.EduConnect.qnaboard.repository.AnswerRepository;
 import com.BugJava.EduConnect.qnaboard.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +63,7 @@ public class CommentService {
     public void updateComment(Long commentId, Long userId, CommentUpdateRequest req) {
         Comment comment = commentRepository.findById(commentId)
                 .filter(c -> !c.isDeleted())
-                .orElseThrow(() -> new CommentNotFoundException(commentId.toString()));
+                .orElseThrow(() -> new QnaCommentNotFoundException(commentId.toString()));
 
         if (!comment.getUser().getId().equals(userId)) {
             throw new AccessDeniedException("본인의 댓글만 수정할 수 있습니다.");
@@ -77,7 +77,7 @@ public class CommentService {
     public void deleteComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId)
                 .filter(c -> !c.isDeleted())
-                .orElseThrow(() -> new CommentNotFoundException(commentId.toString()));
+                .orElseThrow(() -> new QnaCommentNotFoundException(commentId.toString()));
 
         if (!comment.getUser().getId().equals(userId)) {
             throw new AccessDeniedException("본인의 댓글만 삭제할 수 있습니다.");

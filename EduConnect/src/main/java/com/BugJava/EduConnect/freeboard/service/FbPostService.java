@@ -7,7 +7,7 @@ import com.BugJava.EduConnect.common.util.AuthorizationUtil;
 import com.BugJava.EduConnect.freeboard.domain.FbPost;
 import com.BugJava.EduConnect.freeboard.dto.FbPostRequest;
 import com.BugJava.EduConnect.freeboard.dto.FbPostResponse;
-import com.BugJava.EduConnect.freeboard.exception.PostNotFoundException;
+import com.BugJava.EduConnect.freeboard.exception.FbPostNotFoundException;
 import com.BugJava.EduConnect.freeboard.repository.FbPostRepository;
 import com.BugJava.EduConnect.common.dto.PageResponse; // PageResponse 임포트
 import lombok.RequiredArgsConstructor;
@@ -68,7 +68,7 @@ public class FbPostService {
 
     public FbPostResponse getPost(Long id) {
         FbPost post = postRepository.findWithCommentsById(id)
-                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new FbPostNotFoundException("게시글을 찾을 수 없습니다."));
         return FbPostResponse.from(post);
     }
 
@@ -89,7 +89,7 @@ public class FbPostService {
     @Transactional
     public FbPostResponse updatePost(Long id, FbPostRequest request) {
         FbPost post = postRepository.findWithCommentsById(id)
-                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new FbPostNotFoundException("게시글을 찾을 수 없습니다."));
 
         authorizationUtil.checkOwnerOrAdmin(post.getUser().getId());
 
@@ -102,7 +102,7 @@ public class FbPostService {
     @Transactional
     public void deletePost(Long id) {
         FbPost post = postRepository.findWithCommentsById(id)
-                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new FbPostNotFoundException("게시글을 찾을 수 없습니다."));
 
         authorizationUtil.checkOwnerOrAdmin(post.getUser().getId());
 

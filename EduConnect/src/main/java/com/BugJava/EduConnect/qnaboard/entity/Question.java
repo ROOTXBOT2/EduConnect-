@@ -16,7 +16,7 @@ import java.util.List;
  */
 
 @Entity
-@Table(name = "question")
+@Table(name = "qna_questions")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -32,7 +32,7 @@ public class Question extends BaseEntity {
     private Users user;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(columnDefinition = "VARCHAR(255)", nullable = false)
     private Track track; //질문을 전달할 곳. 각 트랙 학생, 강사. BACKEND,FRONTEND,FULLSTACK,TRACK_INSTRUCTOR
 
     @Column(nullable = false, length = 200)

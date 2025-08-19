@@ -1,9 +1,10 @@
-package com.BugJava.EduConnect.integration;
+package com.BugJava.EduConnect.integration.freeboard;
 
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.freeboard.dto.FbPostRequest;
 import com.BugJava.EduConnect.freeboard.dto.FbPostResponse;
 import com.BugJava.EduConnect.freeboard.service.FbPostService;
+import com.BugJava.EduConnect.integration.BaseIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

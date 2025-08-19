@@ -4,13 +4,13 @@ import com.BugJava.EduConnect.assignment.domain.Assignment;
 import com.BugJava.EduConnect.assignment.domain.AssignmentComment;
 import com.BugJava.EduConnect.assignment.dto.AssignmentCommentRequest;
 import com.BugJava.EduConnect.assignment.dto.AssignmentCommentResponse;
-import com.BugJava.EduConnect.assignment.exception.PostNotFoundException;
+import com.BugJava.EduConnect.assignment.exception.AssignmentNotFoundException;
 import com.BugJava.EduConnect.assignment.repository.AssignmentCommentRepository;
 import com.BugJava.EduConnect.assignment.repository.AssignmentRepository;
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.auth.repository.UserRepository;
 import com.BugJava.EduConnect.common.util.AuthorizationUtil;
-import com.BugJava.EduConnect.assignment.exception.CommentNotFoundException;
+import com.BugJava.EduConnect.assignment.exception.AssignmentCommentNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +28,9 @@ public class AssignmentCommentService {
     @Transactional
     public AssignmentCommentResponse createComment(Long assignmentId, AssignmentCommentRequest request, Long userId){
         Users user = userRepository.findById(userId)
-                .orElseThrow(() -> new CommentNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new AssignmentCommentNotFoundException("사용자를 찾을 수 없습니다."));
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new PostNotFoundException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new AssignmentNotFoundException("게시글을 찾을 수 없습니다."));
 
         AssignmentComment.AssignmentCommentBuilder commentBuilder = AssignmentComment.builder()
                 .content(request.getContent())
@@ -40,11 +40,11 @@ public class AssignmentCommentService {
         // 대댓글인 경우 부모 댓글 설정
         if (request.getParentId() != null) {
             AssignmentComment parent = commentRepository.findById(request.getParentId())
-                    .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
+                    .orElseThrow(() -> new AssignmentCommentNotFoundException("댓글을 찾을 수 없습니다."));
 
             // 부모 댓글이 같은 게시글의 댓글인지 확인
             if (!parent.getAssignment().getId().equals(assignmentId)) {
-                throw new CommentNotFoundException("다른 게시글의 댓글입니다.");
+                throw new AssignmentCommentNotFoundException("다른 게시글의 댓글입니다.");
             }
 
             commentBuilder.parent(parent);
@@ -60,7 +60,7 @@ public class AssignmentCommentService {
     @Transactional
     public AssignmentCommentResponse updateComment(Long id, AssignmentCommentRequest request, Long userId){
         AssignmentComment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new AssignmentCommentNotFoundException("댓글을 찾을 수 없습니다."));
 
         authorizationUtil.checkOwnerOrAdmin(comment.getUser().getId());
 
@@ -73,7 +73,7 @@ public class AssignmentCommentService {
     @Transactional
     public void deleteComment(Long id, Long userId){
         AssignmentComment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new AssignmentCommentNotFoundException("댓글을 찾을 수 없습니다."));
 
         authorizationUtil.checkOwnerOrAdmin(comment.getUser().getId());
 

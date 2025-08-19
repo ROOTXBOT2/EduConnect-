@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  * @author rua
  */
 @Entity
-@Table(name = "comments")
+@Table(name = "qna_comments")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

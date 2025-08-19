@@ -1,4 +1,4 @@
-package com.BugJava.EduConnect.integration;
+package com.BugJava.EduConnect.integration.chat;
 
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.auth.enums.Role;
@@ -11,18 +11,17 @@ import com.BugJava.EduConnect.chat.enums.SessionStatus;
 import com.BugJava.EduConnect.chat.repository.ChatSessionRepository;
 import com.BugJava.EduConnect.chat.service.ChatSessionService;
 import com.BugJava.EduConnect.chat.service.RoomService;
+import com.BugJava.EduConnect.integration.BaseIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import static com.BugJava.EduConnect.util.TestUtils.createChatSession;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

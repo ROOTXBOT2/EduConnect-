@@ -4,7 +4,7 @@ import com.BugJava.EduConnect.assignment.domain.Assignment;
 import com.BugJava.EduConnect.assignment.dto.AssignmentRequest;
 import com.BugJava.EduConnect.assignment.dto.AssignmentResponse;
 import com.BugJava.EduConnect.assignment.repository.AssignmentRepository;
-import com.BugJava.EduConnect.assignment.exception.PostNotFoundException;
+import com.BugJava.EduConnect.assignment.exception.AssignmentNotFoundException;
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.auth.exception.UserNotFoundException;
 import com.BugJava.EduConnect.auth.repository.UserRepository;
@@ -62,7 +62,7 @@ public class AssignmentService {
     @Transactional(readOnly = true)
     public AssignmentResponse getAssignment(Long id) {
         Assignment assignment = assignmentRepository.findWithCommentsById(id)
-                .orElseThrow(() -> new PostNotFoundException("과제를 찾을 수 없습니다."));
+                .orElseThrow(() -> new AssignmentNotFoundException("과제를 찾을 수 없습니다."));
 
         return AssignmentResponse.from(assignment);
     }
@@ -71,7 +71,7 @@ public class AssignmentService {
     @Transactional
     public AssignmentResponse updateAssignment(Long id, AssignmentRequest request) {
         Assignment assignment = assignmentRepository.findWithCommentsById(id)
-                .orElseThrow(() -> new PostNotFoundException("과제를 찾을 수 없습니다."));
+                .orElseThrow(() -> new AssignmentNotFoundException("과제를 찾을 수 없습니다."));
 
         authorizationUtil.checkOwnerOrAdmin(assignment.getUser().getId());
 
@@ -85,7 +85,7 @@ public class AssignmentService {
     @Transactional
     public void deleteAssignment(Long id) {
         Assignment assignment = assignmentRepository.findWithCommentsById(id)
-                .orElseThrow(() -> new PostNotFoundException("과제를 찾을 수 없습니다."));
+                .orElseThrow(() -> new AssignmentNotFoundException("과제를 찾을 수 없습니다."));
 
         authorizationUtil.checkOwnerOrAdmin(assignment.getUser().getId());
 

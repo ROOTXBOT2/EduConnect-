@@ -14,7 +14,7 @@ import java.util.List;
  */
 
 @Entity
-@Table(name = "answers")
+@Table(name = "qna_answers")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor

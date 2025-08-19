@@ -9,7 +9,7 @@ import com.BugJava.EduConnect.common.util.AuthorizationUtil;
 import com.BugJava.EduConnect.freeboard.domain.FbPost;
 import com.BugJava.EduConnect.freeboard.dto.FbPostRequest;
 import com.BugJava.EduConnect.freeboard.dto.FbPostResponse;
-import com.BugJava.EduConnect.freeboard.exception.PostNotFoundException;
+import com.BugJava.EduConnect.freeboard.exception.FbPostNotFoundException;
 import com.BugJava.EduConnect.freeboard.repository.FbPostRepository;
 import com.BugJava.EduConnect.freeboard.service.FbPostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -107,7 +107,7 @@ class FbPostServiceTest {
 
             // when & then
             assertThatThrownBy(() -> fbPostService.getPost(postId))
-                    .isInstanceOf(PostNotFoundException.class);
+                    .isInstanceOf(FbPostNotFoundException.class);
         }
     }
 
@@ -188,7 +188,7 @@ class FbPostServiceTest {
 
             // when & then
             assertThatThrownBy(() -> fbPostService.updatePost(postId, request))
-                    .isInstanceOf(PostNotFoundException.class);
+                    .isInstanceOf(FbPostNotFoundException.class);
         }
     }
 
@@ -234,7 +234,7 @@ class FbPostServiceTest {
 
             // when & then
             assertThatThrownBy(() -> fbPostService.deletePost(postId))
-                    .isInstanceOf(PostNotFoundException.class);
+                    .isInstanceOf(FbPostNotFoundException.class);
         }
     }
 }

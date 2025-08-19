@@ -1,10 +1,11 @@
-package com.BugJava.EduConnect.qnaboard.integration;
+package com.BugJava.EduConnect.integration.qnaboard;
 
 import com.BugJava.EduConnect.auth.entity.Users;
 import com.BugJava.EduConnect.auth.enums.Role;
 import com.BugJava.EduConnect.auth.enums.Track;
 import com.BugJava.EduConnect.auth.repository.UserRepository;
 import com.BugJava.EduConnect.common.service.JwtTokenProvider;
+import com.BugJava.EduConnect.integration.BaseIntegrationTest;
 import com.BugJava.EduConnect.qnaboard.dto.QuestionCreateRequest;
 import com.BugJava.EduConnect.qnaboard.entity.Question;
 import com.BugJava.EduConnect.qnaboard.repository.QuestionRepository;
@@ -13,13 +14,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -30,11 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 
  * @author rua
  */
-@SpringBootTest
-@AutoConfigureMockMvc
-@ActiveProfiles("test")
-@Transactional
-class QnaBasicIntegrationTest {
+class QnaBasicIntegrationTest extends BaseIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
@@ -63,7 +56,7 @@ class QnaBasicIntegrationTest {
                 .build());
 
         // JWT 토큰 생성
-        studentToken = jwtTokenProvider.createAccessToken(student.getId(), student.getRole());
+        studentToken = jwtTokenProvider.createAccessToken(student.getId(), student.getName(), student.getRole(), student.getTrack(), student.getEmail());
     }
 
     @Test
