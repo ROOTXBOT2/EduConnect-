@@ -39,6 +39,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.mockito:mockito-inline:5.2.0' // final 클래스/메서드 목킹 지원
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
 	//JWT 0.11.5 -> 0.12.6
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
